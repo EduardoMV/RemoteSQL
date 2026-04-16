@@ -25,13 +25,9 @@ Double-click the `.exe` and follow these steps:
 | Installation Directory | Leave default: `C:\Program Files\PostgreSQL\16` |
 | Select Components | Keep all checked (Server, pgAdmin 4, Stack Builder, Command Line Tools) |
 | Data Directory | Leave default |
-| **Password** | **Set a password for the `postgres` user — write it down, you'll need it** |
+| **Password** |
 | Port | Leave `5432` (default) |
 | Locale | Leave default |
-
-Click through the rest and let it finish (~2 minutes).
-
-> **Important:** The password you set here is the password for the `postgres` superuser. This is what goes into your `.env` file as `DB_PASSWORD`.
 
 ---
 

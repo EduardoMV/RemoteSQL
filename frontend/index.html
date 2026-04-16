@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Remote SQL Workbench</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -14,6 +16,19 @@
       <span class="brand-icon">⬡</span>
       <span class="brand-name">RemoteSQL Workbench</span>
     </div>
+    <div class="api-key-section">
+      <span id="key-icon" class="key-icon unset" title="API Key status">&#128273;</span>
+      <input
+        type="password"
+        id="api-key-input"
+        class="api-key-input"
+        placeholder="API Key"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button id="btn-save-key" class="btn-ghost btn-sm">Save</button>
+    </div>
+
     <div class="topbar-meta">
       <span id="connection-status" class="status-dot disconnected" title="API status"></span>
       <span id="connection-label">Connecting…</span>
@@ -44,9 +59,8 @@
           <div class="editor-actions">
             <button class="btn-ghost" id="btn-clear" title="Clear editor">Clear</button>
             <button class="btn-ghost" id="btn-format" title="Format query">Format</button>
-            <button class="btn-primary" id="btn-execute">
-              ▶ Execute
-            </button>
+            <button class="btn-ghost" id="btn-save" title="Save script">Save</button>
+            <button class="btn-primary" id="btn-execute">&#9654; Execute</button>
           </div>
         </div>
 
@@ -59,8 +73,17 @@
           placeholder="-- Type your SQL query here&#10;SELECT * FROM users LIMIT 10;"
         ></textarea>
 
+        <!-- Save dialog -->
+        <div id="save-dialog" class="save-dialog hidden">
+          <span class="save-dialog-label">Name:</span>
+          <input type="text" id="save-name-input" class="save-name-input"
+                 placeholder="e.g. Total balances per user…" maxlength="60" />
+          <button id="btn-save-confirm" class="btn-ghost btn-sm">&#10003; Save</button>
+          <button id="btn-save-cancel" class="btn-icon" title="Cancel">&#10005;</button>
+        </div>
+
         <!-- Keyboard hint -->
-        <div class="editor-hint">Ctrl + Enter to execute</div>
+        <div class="editor-hint">Ctrl + Enter to execute &nbsp;·&nbsp; Save to store a script</div>
       </section>
 
       <!-- Status bar -->
@@ -75,7 +98,13 @@
         <div class="results-toolbar">
           <span class="section-label">Results</span>
           <span id="results-count" class="results-count"></span>
-          <button class="btn-ghost btn-sm" id="btn-export" style="display:none">↓ Export CSV</button>
+          <span id="results-time" class="results-time"></span>
+          <div id="pagination-bar" class="pagination-bar hidden">
+            <button class="btn-icon" id="btn-prev-page" title="Previous page">&#8592;</button>
+            <span id="page-label" class="page-label"></span>
+            <button class="btn-icon" id="btn-next-page" title="Next page">&#8594;</button>
+          </div>
+          <button class="btn-ghost btn-sm" id="btn-export" style="display:none">&#8595; Export CSV</button>
         </div>
         <div id="results-container" class="results-container">
           <div class="results-empty">
@@ -87,14 +116,20 @@
 
     </main>
 
-    <!-- RIGHT PANEL — Query History -->
+    <!-- RIGHT PANEL — History / Saved Scripts -->
     <aside class="history-panel">
-      <div class="sidebar-header">
-        <span>History</span>
-        <button class="btn-icon" id="btn-clear-history" title="Clear history">✕</button>
+      <div class="sidebar-header panel-header">
+        <div class="panel-tabs">
+          <button class="panel-tab active" id="tab-history">History</button>
+          <button class="panel-tab" id="tab-saved">Saved</button>
+        </div>
+        <button class="btn-icon" id="btn-clear-history" title="Clear history">&#10005;</button>
       </div>
       <div id="history-list" class="history-list">
         <p class="sidebar-hint">No queries yet.</p>
+      </div>
+      <div id="saved-list" class="saved-list hidden">
+        <p class="sidebar-hint">No saved scripts yet.</p>
       </div>
     </aside>
 
@@ -106,6 +141,9 @@
     <span>Executing…</span>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/display/placeholder.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

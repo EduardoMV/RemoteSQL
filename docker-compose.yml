@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB:       remotesql
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: remotesql_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+      - ./database/seed_extra.sql:/docker-entrypoint-initdb.d/03_seed_extra.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d remotesql"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  api:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST:     db
+      DB_PORT:     5432
+      DB_NAME:     remotesql
+      DB_USER:     postgres
+      DB_PASSWORD: remotesql_pass
+      API_PORT:    8000
+      API_KEY:     remotesql-dev-2026-edu
+
+volumes:
+  postgres_data:
